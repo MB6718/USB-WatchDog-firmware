@@ -29,12 +29,14 @@
 /* прототипы функций ---------------------------------------------------------*/
 void CLK_config(void);
 void GPIO_config(void);
+void TIMERS_config(void);
 
 /* глобальные переменные -----------------------------------------------------*/
 
 main() {
 	CLK_config();
 	GPIO_config();
+	TIMERS_config();
 	
 	while (1) {
 		
@@ -70,6 +72,15 @@ void GPIO_config(void) {
 		RELAY_PWR,
 		GPIO_MODE_OUT_PP_LOW_FAST
 	);
+}
+
+/* конфигурирование режимов таймеров TIM4 и TIM2 */
+void TIMERS_config(void) {
+	/* конфигурируем таймер TIM4 для сработки 1 раз в 1мс (fMaster = 16Mhz) */
+	TIM4_TimeBaseInit(TIM4_PRESCALER_128, 124);
+	TIM4_ClearFlag(TIM4_FLAG_UPDATE);
+	TIM4_ITConfig(TIM4_IT_UPDATE, ENABLE);
+	TIM4_Cmd(ENABLE);
 }
 
 /* Обработчик прерывания таймера TIM4 */
