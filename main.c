@@ -26,8 +26,39 @@
 #define RELAY_PWR_PORT GPIOC
 #define RELAY_PWR GPIO_PIN_3
 
+/* прототипы функций ---------------------------------------------------------*/
+void GPIO_config(void);
+
 main() {
-	while (1);
+	GPIO_config();
+	
+	while (1) {
+		
+	}
+}
+
+/* конфигурирование выводов GPIO */
+void GPIO_config(void) {
+	GPIO_Init(
+		LED_PORT,
+		LED, // GPIO_PIN_ALL
+		GPIO_MODE_OUT_PP_LOW_FAST
+	);
+	GPIO_Init(
+		IND_PORT,
+		IND,
+		GPIO_MODE_OUT_PP_HIGH_FAST
+	);
+	GPIO_Init(
+		RELAY_RST_PORT,
+		RELAY_RST,
+		GPIO_MODE_OUT_PP_HIGH_FAST
+	);
+	GPIO_Init(
+		RELAY_PWR_PORT,
+		RELAY_PWR,
+		GPIO_MODE_OUT_PP_LOW_FAST
+	);
 }
 
 /* Обработчик прерывания таймера TIM4 */
