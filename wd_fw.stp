@@ -333,7 +333,7 @@ PathName=stm8_interrupt_vector.c
 [Root.Include Files]
 ElemType=Folder
 PathName=Include Files
-Child=Root.Include Files.libraries\stm8s_stdperiph_driver\inc\stm8s_tim4.h
+Child=Root.Include Files.main.h
 Config.0=Root.Include Files.Config.0
 Config.1=Root.Include Files.Config.1
 
@@ -402,6 +402,11 @@ String.3.0=
 String.4.0=
 String.5.0=
 String.6.0=2020,11,9,0,23,22
+
+[Root.Include Files.main.h]
+ElemType=File
+PathName=main.h
+Next=Root.Include Files.libraries\stm8s_stdperiph_driver\inc\stm8s_tim4.h
 
 [Root.Include Files.libraries\stm8s_stdperiph_driver\inc\stm8s_tim4.h]
 ElemType=File

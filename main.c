@@ -12,9 +12,18 @@
 /* Includes ------------------------------------------------------------------*/
 #include "stm8s.h"
 
-main()
-{
+main() {
 	while (1);
+}
+
+/* Обработчик прерывания таймера TIM4 */
+INTERRUPT_HANDLER(TIM4_UPD_OVF_IRQHandler, 23) {
+	
+}
+
+/* Обработчик прерывания таймера TIM2 */
+INTERRUPT_HANDLER(TIM2_UPD_OVF_BRK_IRQHandler, 13) {
+	
 }
 
 /* */
