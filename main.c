@@ -12,13 +12,27 @@
 /* Includes ------------------------------------------------------------------*/
 #include "stm8s.h"
 
+/* определяем порты и пины для светодиодов индикации -------------------------*/
+#define LED_PORT GPIOB
+#define LED GPIO_PIN_5
+
+#define IND_PORT GPIOA
+#define IND GPIO_PIN_2
+
+/* определяем порты и пины для каналов реле ----------------------------------*/
+#define RELAY_RST_PORT GPIOD
+#define RELAY_RST GPIO_PIN_4
+
+#define RELAY_PWR_PORT GPIOC
+#define RELAY_PWR GPIO_PIN_3
+
 main() {
 	while (1);
 }
 
 /* Обработчик прерывания таймера TIM4 */
 INTERRUPT_HANDLER(TIM4_UPD_OVF_IRQHandler, 23) {
-	
+
 }
 
 /* Обработчик прерывания таймера TIM2 */
