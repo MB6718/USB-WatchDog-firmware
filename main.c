@@ -30,16 +30,21 @@
 void CLK_config(void);
 void GPIO_config(void);
 void TIMERS_config(void);
+void delay_ms(uint32_t ms);
 
 /* глобальные переменные -----------------------------------------------------*/
+volatile uint32_t delay_counter = 0;
 
 main() {
 	CLK_config();
 	GPIO_config();
 	TIMERS_config();
 	
-	while (1) {
-		
+	enableInterrupts();
+	
+	while (1) { // (!) for debug delay
+		GPIO_WriteReverse(LED_PORT, LED);
+		delay_ms(1000);
 	}
 }
 
@@ -85,12 +90,23 @@ void TIMERS_config(void) {
 
 /* Обработчик прерывания таймера TIM4 */
 INTERRUPT_HANDLER(TIM4_UPD_OVF_IRQHandler, 23) {
-
+	if (TIM4_GetITStatus(TIM4_IT_UPDATE) == SET) {
+		if (delay_counter)
+			delay_counter--;
+		TIM4_ClearITPendingBit(TIM4_IT_UPDATE);
+	}
 }
 
 /* Обработчик прерывания таймера TIM2 */
 INTERRUPT_HANDLER(TIM2_UPD_OVF_BRK_IRQHandler, 13) {
 	
+}
+
+/* функция задержки по прерыванию таймера TIM4 */
+void delay_ms(uint32_t ms) {
+	delay_counter = ms;
+	TIM4_SetCounter(0);
+	while (delay_counter);
 }
 
 /* */
