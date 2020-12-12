@@ -27,14 +27,25 @@
 #define RELAY_PWR GPIO_PIN_3
 
 /* прототипы функций ---------------------------------------------------------*/
+void CLK_config(void);
 void GPIO_config(void);
 
+/* глобальные переменные -----------------------------------------------------*/
+
 main() {
+	CLK_config();
 	GPIO_config();
 	
 	while (1) {
 		
 	}
+}
+
+/* конфигурирование тактирования МК */
+void CLK_config(void) {
+	// тактирование от внутреннего генератора fMaster = 16Mhz
+	CLK_SYSCLKConfig(CLK_PRESCALER_HSIDIV1);
+	CLK_SYSCLKConfig(CLK_PRESCALER_CPUDIV1);
 }
 
 /* конфигурирование выводов GPIO */
