@@ -30,11 +30,19 @@
 void CLK_config(void);
 void GPIO_config(void);
 void TIMERS_config(void);
+void UART_config(uint32_t baud_rate);
+
 void delay_ms(uint32_t ms);
+
+/* команды протокола ---------------------------------------------------------*/
+#define relay_on_cmd (uint8_t)0xFF
+#define relay_off_cmd (uint8_t)0xFE
+#define null_cmd (uint8_t)0x00
 
 /* глобальные переменные -----------------------------------------------------*/
 bool reset_flag = FALSE;
 
+uint8_t	command;
 uint16_t time_limit = (uint32_t)180; // time(sec) [default: 180 sec]
 volatile uint16_t time_counter = 0;
 volatile uint32_t delay_counter = 0;
@@ -42,8 +50,9 @@ volatile uint32_t delay_counter = 0;
 main() {
 	CLK_config();
 	GPIO_config();
+	UART_config(9600);
+
 	TIMERS_config();
-	
 	enableInterrupts();
 	
 	time_limit = 10;
@@ -54,7 +63,25 @@ main() {
 			TIM2_Cmd(ENABLE);
 			GPIO_WriteReverse(LED_PORT, LED);
 			GPIO_WriteReverse(IND_PORT, IND);
-			reset_flag=FALSE;
+			reset_flag = FALSE;
+		} else {
+			if (UART1_GetFlagStatus(UART1_FLAG_RXNE)) {
+				command = UART1_ReceiveData8();
+				if (command == relay_off_cmd) {
+					UART1_SendData8(command);
+					GPIO_WriteHigh(RELAY_RST_PORT, RELAY_RST);
+				}
+				if (command == relay_on_cmd) {
+					UART1_SendData8(command);
+					GPIO_WriteLow(RELAY_RST_PORT, RELAY_RST);
+				}
+				if (command != null_cmd) {
+					GPIO_WriteReverse(IND_PORT, IND);
+					delay_ms(150);
+					GPIO_WriteReverse(IND_PORT, IND);
+				}
+				time_counter = 0;
+			}
 		}
 	}
 }
@@ -88,6 +115,19 @@ void GPIO_config(void) {
 		RELAY_PWR,
 		GPIO_MODE_OUT_PP_LOW_FAST
 	);
+}
+
+/* конфигурирование UART модуля */
+void UART_config(uint32_t baud_rate) {
+	UART1_Init(
+		baud_rate, // (uint32_t)9600,
+		UART1_WORDLENGTH_8D,
+		UART1_STOPBITS_1,
+		UART1_PARITY_NO,
+		UART1_SYNCMODE_CLOCK_DISABLE,
+		UART1_MODE_TXRX_ENABLE
+	);
+	UART1_Cmd(ENABLE);
 }
 
 /* конфигурирование режимов таймеров TIM4 и TIM2 */
