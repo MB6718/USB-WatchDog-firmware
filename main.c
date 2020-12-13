@@ -33,6 +33,10 @@ void TIMERS_config(void);
 void delay_ms(uint32_t ms);
 
 /* глобальные переменные -----------------------------------------------------*/
+bool reset_flag = FALSE;
+
+uint16_t time_limit = (uint32_t)180; // time(sec) [default: 180 sec]
+volatile uint16_t time_counter = 0;
 volatile uint32_t delay_counter = 0;
 
 main() {
@@ -42,9 +46,16 @@ main() {
 	
 	enableInterrupts();
 	
+	time_limit = 10;
+	
 	while (1) { // (!) for debug delay
-		GPIO_WriteReverse(LED_PORT, LED);
-		delay_ms(1000);
+		if (reset_flag) {
+			time_counter = 0;
+			TIM2_Cmd(ENABLE);
+			GPIO_WriteReverse(LED_PORT, LED);
+			GPIO_WriteReverse(IND_PORT, IND);
+			reset_flag=FALSE;
+		}
 	}
 }
 
@@ -86,6 +97,12 @@ void TIMERS_config(void) {
 	TIM4_ClearFlag(TIM4_FLAG_UPDATE);
 	TIM4_ITConfig(TIM4_IT_UPDATE, ENABLE);
 	TIM4_Cmd(ENABLE);
+	
+	/* конфигурируем таймер TIM2 для сработки 1 раз в 1с (fMaster = 16Mhz) */
+	TIM2_TimeBaseInit(TIM2_PRESCALER_1024, 15624);
+	TIM2_ClearFlag(TIM2_FLAG_UPDATE);
+	TIM2_ITConfig(TIM2_IT_UPDATE, ENABLE);
+	TIM2_Cmd(ENABLE);
 }
 
 /* Обработчик прерывания таймера TIM4 */
@@ -99,7 +116,17 @@ INTERRUPT_HANDLER(TIM4_UPD_OVF_IRQHandler, 23) {
 
 /* Обработчик прерывания таймера TIM2 */
 INTERRUPT_HANDLER(TIM2_UPD_OVF_BRK_IRQHandler, 13) {
-	
+	if (TIM2_GetITStatus(TIM2_IT_UPDATE) == SET) {
+		if (time_counter < time_limit) {
+			time_counter++;
+			GPIO_WriteReverse(LED_PORT, LED);
+		}	else {
+			TIM2_Cmd(DISABLE);
+			//time_counter = 0;
+			reset_flag = TRUE;
+		}
+		TIM2_ClearITPendingBit(TIM2_IT_UPDATE);
+	}
 }
 
 /* функция задержки по прерыванию таймера TIM4 */
