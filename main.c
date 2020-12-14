@@ -34,10 +34,12 @@ void UART_config(uint32_t baud_rate);
 
 void delay_ms(uint32_t ms);
 
+void hard_reset(void);
 void soft_reset(void);
 
 /* команды протокола ---------------------------------------------------------*/
 #define soft_reset_cmd (uint8_t)0xFF
+#define hard_reset_cmd (uint8_t)0xFE
 #define null_cmd (uint8_t)0x00
 
 /* глобальные переменные -----------------------------------------------------*/
@@ -46,7 +48,7 @@ bool busy_flag = FALSE;
 enum reset_mode {soft_mode, hard_mode} mode;
 
 uint8_t	command;
-uint16_t time_limit = (uint32_t)180; // time(sec) [default: 180 sec]
+uint16_t time_limit = (uint32_t)180; // time in sec (default: 180 sec)
 volatile uint16_t time_counter = 0;
 volatile uint32_t delay_counter = 0;
 
@@ -67,6 +69,8 @@ main() {
 		if (reset_flag) {
 			if (mode == soft_mode)
 				soft_reset();
+			if (mode == hard_mode)
+				hard_reset();
 			time_counter = 0;
 			TIM2_Cmd(ENABLE);
 		} else {
@@ -75,6 +79,11 @@ main() {
 				if (command == soft_reset_cmd) {
 					UART1_SendData8(command);
 					mode = soft_mode;
+					reset_flag = TRUE;
+				}
+				if (command == hard_reset_cmd) {
+					UART1_SendData8(command);
+					mode = hard_mode;
 					reset_flag = TRUE;
 				}
 				if (command != null_cmd) {
@@ -145,6 +154,29 @@ void TIMERS_config(void) {
 	TIM2_ClearFlag(TIM2_FLAG_UPDATE);
 	TIM2_ITConfig(TIM2_IT_UPDATE, ENABLE);
 	TIM2_Cmd(ENABLE);
+}
+
+/* функци€ "жЄсткой перезагрузки" */
+void hard_reset(void) {
+	reset_flag = FALSE;
+	TIM2_Cmd(DISABLE);
+	if (!(busy_flag)) {
+		busy_flag = TRUE;
+		GPIO_WriteHigh(RELAY_PWR_PORT, RELAY_PWR);
+		GPIO_WriteReverse(IND_PORT, IND);
+		delay_ms(20000);
+		GPIO_WriteLow(RELAY_PWR_PORT, RELAY_PWR);
+		GPIO_WriteReverse(IND_PORT, IND);
+		delay_ms(1500);
+		GPIO_WriteHigh(RELAY_PWR_PORT, RELAY_PWR);
+		delay_ms(1000);
+		GPIO_WriteLow(RELAY_PWR_PORT, RELAY_PWR);
+		delay_ms(1500);
+		GPIO_WriteLow(RELAY_RST_PORT, RELAY_RST);
+		delay_ms(1000);
+		GPIO_WriteHigh(RELAY_RST_PORT, RELAY_RST);
+		busy_flag = FALSE;
+	}
 }
 
 /* функци€ "м€гкой перезагрузки" */
