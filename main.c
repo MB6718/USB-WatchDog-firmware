@@ -34,13 +34,16 @@ void UART_config(uint32_t baud_rate);
 
 void delay_ms(uint32_t ms);
 
+void soft_reset(void);
+
 /* команды протокола ---------------------------------------------------------*/
-#define relay_on_cmd (uint8_t)0xFF
-#define relay_off_cmd (uint8_t)0xFE
+#define soft_reset_cmd (uint8_t)0xFF
 #define null_cmd (uint8_t)0x00
 
 /* глобальные переменные -----------------------------------------------------*/
 bool reset_flag = FALSE;
+bool busy_flag = FALSE;
+enum reset_mode {soft_mode, hard_mode} mode;
 
 uint8_t	command;
 uint16_t time_limit = (uint32_t)180; // time(sec) [default: 180 sec]
@@ -55,32 +58,31 @@ main() {
 	TIMERS_config();
 	enableInterrupts();
 	
+	delay_ms(1000);
+	soft_reset();
+	
 	time_limit = 10;
 	
-	while (1) { // (!) for debug delay
+	while (1) {
 		if (reset_flag) {
+			if (mode == soft_mode)
+				soft_reset();
 			time_counter = 0;
 			TIM2_Cmd(ENABLE);
-			GPIO_WriteReverse(LED_PORT, LED);
-			GPIO_WriteReverse(IND_PORT, IND);
-			reset_flag = FALSE;
 		} else {
 			if (UART1_GetFlagStatus(UART1_FLAG_RXNE)) {
 				command = UART1_ReceiveData8();
-				if (command == relay_off_cmd) {
+				if (command == soft_reset_cmd) {
 					UART1_SendData8(command);
-					GPIO_WriteHigh(RELAY_RST_PORT, RELAY_RST);
-				}
-				if (command == relay_on_cmd) {
-					UART1_SendData8(command);
-					GPIO_WriteLow(RELAY_RST_PORT, RELAY_RST);
+					mode = soft_mode;
+					reset_flag = TRUE;
 				}
 				if (command != null_cmd) {
 					GPIO_WriteReverse(IND_PORT, IND);
 					delay_ms(150);
 					GPIO_WriteReverse(IND_PORT, IND);
+					time_counter = 0;
 				}
-				time_counter = 0;
 			}
 		}
 	}
@@ -143,6 +145,20 @@ void TIMERS_config(void) {
 	TIM2_ClearFlag(TIM2_FLAG_UPDATE);
 	TIM2_ITConfig(TIM2_IT_UPDATE, ENABLE);
 	TIM2_Cmd(ENABLE);
+}
+
+/* функци€ "м€гкой перезагрузки" */
+void soft_reset(void) {
+	reset_flag = FALSE;
+	if (!(busy_flag)) {
+		busy_flag = TRUE;
+		GPIO_WriteLow(RELAY_RST_PORT, RELAY_RST);
+		GPIO_WriteReverse(IND_PORT, IND);
+		delay_ms(1000);
+		GPIO_WriteHigh(RELAY_RST_PORT, RELAY_RST);
+		GPIO_WriteReverse(IND_PORT, IND);
+		busy_flag = FALSE;
+	}
 }
 
 /* ќбработчик прерывани€ таймера TIM4 */
