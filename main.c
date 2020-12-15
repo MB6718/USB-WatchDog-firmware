@@ -32,6 +32,7 @@ void GPIO_config(void);
 void TIMERS_config(void);
 void UART_config(uint32_t baud_rate);
 
+void write_to_eeprom(uint32_t address, uint8_t data);
 void delay_ms(uint32_t ms);
 
 void hard_reset(void);
@@ -56,6 +57,9 @@ void power_off(void);
 /* константы и предопределения -----------------------------------------------*/
 #define FW_VER (uint8_t)0x01 // версия прошивки 0.1
 
+EEPROM uint8_t eeprom_time_limit @0x4000;
+EEPROM uint8_t eeprom_reset_mode @0x4001;
+
 /* глобальные переменные -----------------------------------------------------*/
 bool reset_flag = FALSE;
 bool busy_flag = FALSE;
@@ -70,6 +74,10 @@ main() {
 	CLK_config();
 	GPIO_config();
 	UART_config(9600);
+	
+	/* извлечение переменных из ППЗУ в ОЗУ */
+	time_limit = (uint16_t)(eeprom_time_limit * 10);
+	mode = eeprom_reset_mode - soft_mode_cmd;
 
 	TIMERS_config();
 	enableInterrupts();
@@ -107,11 +115,15 @@ main() {
 				}
 				if (command >= min_time_cmd && command <= max_time_cmd) {
 					time_limit = (uint32_t)(command * 10);
+					if (eeprom_time_limit != command)
+						write_to_eeprom((uint32_t)&eeprom_time_limit, command);
 					UART1_SendData8(accept_cmd);
 				}
 				if (command == soft_mode_cmd || command == hard_mode_cmd || \
 				    command == power_off_mode_cmd) {
 					mode = command - soft_mode_cmd;
+					if (eeprom_reset_mode != command)
+						write_to_eeprom((uint32_t)&eeprom_reset_mode, command);
 					UART1_SendData8(accept_cmd);
 				}
 				if (command == get_device_version_cmd) {
@@ -273,6 +285,15 @@ INTERRUPT_HANDLER(TIM2_UPD_OVF_BRK_IRQHandler, 13) {
 		}
 		TIM2_ClearITPendingBit(TIM2_IT_UPDATE);
 	}
+}
+
+/* функция записи в ППЗУ одного байта по вдресу */
+void write_to_eeprom(uint32_t address, uint8_t data) {
+		if (FLASH_GetFlagStatus(FLASH_FLAG_DUL) == RESET)
+			FLASH_Unlock(FLASH_MEMTYPE_DATA);
+		while (FLASH_GetFlagStatus(FLASH_FLAG_DUL) == RESET);
+		FLASH_ProgramByte(address, data);
+    FLASH_Lock(FLASH_MEMTYPE_DATA);
 }
 
 /* функция задержки по прерыванию таймера TIM4 */
