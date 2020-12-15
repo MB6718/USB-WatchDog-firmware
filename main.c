@@ -112,6 +112,13 @@ main() {
 				if (command == accept_cmd) {
 					UART1_SendData8(accept_cmd);
 				}
+				if (command >= hello_cmd && command != check_device_cmd && \
+						command != hard_mode_cmd && command != soft_mode_cmd && \
+						command != hard_reset_cmd && command != soft_reset_cmd && \
+						command != accept_cmd && command != accept_cmd - 1 && \
+						command != get_device_version_cmd) {
+					UART1_SendData8(command + 1);
+				}
 				if (command != null_cmd) {
 					GPIO_WriteReverse(IND_PORT, IND);
 					delay_ms(150);
