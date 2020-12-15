@@ -45,6 +45,8 @@ void soft_reset(void);
 #define hello_cmd (uint8_t)0x80
 #define check_device_cmd (uint8_t)0x81
 #define get_device_version_cmd (uint8_t)0x88
+#define soft_mode_cmd (uint8_t)0xA0
+#define hard_mode_cmd (uint8_t)0xA1
 #define accept_cmd (uint8_t)0xAA
 #define null_cmd (uint8_t)0x00
 
@@ -95,6 +97,10 @@ main() {
 				}
 				if (command >= min_time_cmd && command <= max_time_cmd) {
 					time_limit = (uint32_t)(command * 10);
+					UART1_SendData8(accept_cmd);
+				}
+				if (command == soft_mode_cmd || command == hard_mode_cmd) {
+					mode = command - soft_mode_cmd;
 					UART1_SendData8(accept_cmd);
 				}
 				if (command == get_device_version_cmd) {
