@@ -40,6 +40,8 @@ void soft_reset(void);
 /* команды протокола ---------------------------------------------------------*/
 #define soft_reset_cmd (uint8_t)0xFF
 #define hard_reset_cmd (uint8_t)0xFE
+#define min_time_cmd (uint8_t)0x01
+#define max_time_cmd (uint8_t)0x7F
 #define hello_cmd (uint8_t)0x80
 #define check_device_cmd (uint8_t)0x81
 #define get_device_version_cmd (uint8_t)0x88
@@ -70,8 +72,6 @@ main() {
 	delay_ms(1000);
 	soft_reset();
 	
-	time_limit = 10;
-	
 	while (1) {
 		if (reset_flag) {
 			if (mode == soft_mode)
@@ -92,6 +92,10 @@ main() {
 					UART1_SendData8(command);
 					mode = hard_mode;
 					reset_flag = TRUE;
+				}
+				if (command >= min_time_cmd && command <= max_time_cmd) {
+					time_limit = (uint32_t)(command * 10);
+					UART1_SendData8(accept_cmd);
 				}
 				if (command == get_device_version_cmd) {
 					UART1_SendData8(FW_VER);
