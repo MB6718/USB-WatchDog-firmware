@@ -40,6 +40,8 @@ void soft_reset(void);
 /* команды протокола ---------------------------------------------------------*/
 #define soft_reset_cmd (uint8_t)0xFF
 #define hard_reset_cmd (uint8_t)0xFE
+#define hello_cmd (uint8_t)0x80
+#define check_device_cmd (uint8_t)0x81
 #define get_device_version_cmd (uint8_t)0x88
 #define null_cmd (uint8_t)0x00
 
@@ -92,6 +94,9 @@ main() {
 				}
 				if (command == get_device_version_cmd) {
 					UART1_SendData8(FW_VER);
+				}
+				if (command == check_device_cmd) {
+					UART1_SendData8(hello_cmd);
 				}
 				if (command != null_cmd) {
 					GPIO_WriteReverse(IND_PORT, IND);
