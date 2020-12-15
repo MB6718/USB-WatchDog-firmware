@@ -43,6 +43,7 @@ void soft_reset(void);
 #define hello_cmd (uint8_t)0x80
 #define check_device_cmd (uint8_t)0x81
 #define get_device_version_cmd (uint8_t)0x88
+#define accept_cmd (uint8_t)0xAA
 #define null_cmd (uint8_t)0x00
 
 /* константы и предопределения -----------------------------------------------*/
@@ -97,6 +98,9 @@ main() {
 				}
 				if (command == check_device_cmd) {
 					UART1_SendData8(hello_cmd);
+				}
+				if (command == accept_cmd) {
+					UART1_SendData8(accept_cmd);
 				}
 				if (command != null_cmd) {
 					GPIO_WriteReverse(IND_PORT, IND);
