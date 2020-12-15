@@ -36,10 +36,12 @@ void delay_ms(uint32_t ms);
 
 void hard_reset(void);
 void soft_reset(void);
+void power_off(void);
 
 /* команды протокола ---------------------------------------------------------*/
 #define soft_reset_cmd (uint8_t)0xFF
 #define hard_reset_cmd (uint8_t)0xFE
+#define power_off_cmd (uint8_t)0xFD
 #define min_time_cmd (uint8_t)0x01
 #define max_time_cmd (uint8_t)0x7F
 #define hello_cmd (uint8_t)0x80
@@ -47,6 +49,7 @@ void soft_reset(void);
 #define get_device_version_cmd (uint8_t)0x88
 #define soft_mode_cmd (uint8_t)0xA0
 #define hard_mode_cmd (uint8_t)0xA1
+#define power_off_mode_cmd (uint8_t)0xA2
 #define accept_cmd (uint8_t)0xAA
 #define null_cmd (uint8_t)0x00
 
@@ -56,7 +59,7 @@ void soft_reset(void);
 /* глобальные переменные -----------------------------------------------------*/
 bool reset_flag = FALSE;
 bool busy_flag = FALSE;
-enum reset_mode {soft_mode, hard_mode} mode;
+enum reset_mode {soft_mode, hard_mode, power_off_mode} mode;
 
 uint8_t	command;
 uint16_t time_limit = (uint32_t)180; // time in sec (default: 180 sec)
@@ -80,6 +83,8 @@ main() {
 				soft_reset();
 			if (mode == hard_mode)
 				hard_reset();
+			if (mode == power_off_mode)
+				power_off();
 			time_counter = 0;
 			TIM2_Cmd(ENABLE);
 		} else {
@@ -95,11 +100,17 @@ main() {
 					mode = hard_mode;
 					reset_flag = TRUE;
 				}
+				if (command == power_off_cmd) {
+					UART1_SendData8(command);
+					mode = power_off_mode;
+					reset_flag = TRUE;
+				}
 				if (command >= min_time_cmd && command <= max_time_cmd) {
 					time_limit = (uint32_t)(command * 10);
 					UART1_SendData8(accept_cmd);
 				}
-				if (command == soft_mode_cmd || command == hard_mode_cmd) {
+				if (command == soft_mode_cmd || command == hard_mode_cmd || \
+				    command == power_off_mode_cmd) {
 					mode = command - soft_mode_cmd;
 					UART1_SendData8(accept_cmd);
 				}
@@ -115,6 +126,7 @@ main() {
 				if (command >= hello_cmd && command != check_device_cmd && \
 						command != hard_mode_cmd && command != soft_mode_cmd && \
 						command != hard_reset_cmd && command != soft_reset_cmd && \
+						command != power_off_mode_cmd && command != power_off_cmd && \
 						command != accept_cmd && command != accept_cmd - 1 && \
 						command != get_device_version_cmd) {
 					UART1_SendData8(command + 1);
@@ -221,6 +233,19 @@ void soft_reset(void) {
 		GPIO_WriteReverse(IND_PORT, IND);
 		delay_ms(1000);
 		GPIO_WriteHigh(RELAY_RST_PORT, RELAY_RST);
+		GPIO_WriteReverse(IND_PORT, IND);
+		busy_flag = FALSE;
+	}
+}
+
+/* функция "отключения питания" */
+void power_off(void) {
+	reset_flag = FALSE;
+	if (!(busy_flag)) {
+		busy_flag = TRUE;
+		GPIO_WriteHigh(RELAY_PWR_PORT, RELAY_PWR);
+		GPIO_WriteReverse(IND_PORT, IND);
+		delay_ms(150);
 		GPIO_WriteReverse(IND_PORT, IND);
 		busy_flag = FALSE;
 	}
