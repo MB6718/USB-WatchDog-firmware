@@ -40,7 +40,11 @@ void soft_reset(void);
 /* команды протокола ---------------------------------------------------------*/
 #define soft_reset_cmd (uint8_t)0xFF
 #define hard_reset_cmd (uint8_t)0xFE
+#define get_device_version_cmd (uint8_t)0x88
 #define null_cmd (uint8_t)0x00
+
+/* константы и предопределения -----------------------------------------------*/
+#define FW_VER (uint8_t)0x01 // версия прошивки 0.1
 
 /* глобальные переменные -----------------------------------------------------*/
 bool reset_flag = FALSE;
@@ -85,6 +89,9 @@ main() {
 					UART1_SendData8(command);
 					mode = hard_mode;
 					reset_flag = TRUE;
+				}
+				if (command == get_device_version_cmd) {
+					UART1_SendData8(FW_VER);
 				}
 				if (command != null_cmd) {
 					GPIO_WriteReverse(IND_PORT, IND);
