@@ -63,7 +63,7 @@ EEPROM uint8_t eeprom_reset_mode @0x4001;
 /* глобальные переменные -----------------------------------------------------*/
 bool reset_flag = FALSE;
 bool busy_flag = FALSE;
-enum reset_mode {soft_mode, hard_mode, power_off_mode} mode;
+enum reset_mode {soft_mode, hard_mode, power_off_mode} mode = soft_mode;
 
 uint8_t	command;
 uint16_t time_limit = (uint32_t)180; // time in sec (default: 180 sec)
