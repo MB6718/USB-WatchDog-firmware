@@ -603,10 +603,6 @@ WindowName=Debug instrument
 ResourceID=0
 ptn_Child1=ToolBarInfoEx
 
-[WorkState_v1_2.DockState.Bar-14.ToolBarInfoEx]
-Title=Debug instrument
-Buttons=JPAIAAAAAA
-
 [WorkState_v1_2.DockState.Bar-15]
 BarID=59401
 XPos=757
@@ -1186,7 +1182,7 @@ ptn_Child1=MainFrame
 ptn_Child2=ChildFrames
 
 [WorkState_v1_2.Frames.MainFrame]
-WindowPlacement=MCAAAAAACAAAAAAADAAAAAAAPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPHLAAAAAAEHAAAAAAEGEAAAAADBDAAAAA
+WindowPlacement=MCAAAAAACAAAAAAADAAAAAAAAADIPPPPAADIPPPPPPPPPPPPPPPPPPPPHLAAAAAAEHAAAAAAEGEAAAAADBDAAAAA
 Title=ST Visual Develop - wd_fw.stw - [main.c]
 
 [WorkState_v1_2.Frames.ChildFrames]

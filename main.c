@@ -76,8 +76,10 @@ main() {
 	UART_config(9600);
 	
 	/* извлечение переменных из ППЗУ в ОЗУ */
-	time_limit = (uint16_t)(eeprom_time_limit * 10);
-	mode = eeprom_reset_mode - soft_mode_cmd;
+  if (eeprom_time_limit != 0x00 )
+		time_limit = (uint16_t)(eeprom_time_limit * 10);
+	if (eeprom_reset_mode != 0x00)
+		mode = eeprom_reset_mode - soft_mode_cmd;
 
 	TIMERS_config();
 	enableInterrupts();
