@@ -30,7 +30,8 @@
 This firmware is intended for use in widely used Chinese-made USB WatchDog devices.  
 The standard firmware supplied with the device has a number of limitations and bugs.  
 Firmware is designed to get rid of bugs and significantly expand the functionality of the device, while leaving backward compatibility with the original firmware.
-> NOTE! Firmware only for devices based on STM8 micro-controller. As a development environment, the environment from ["ST Microelectronics - ST Visual Develop"](#build_with_1) with the ["Cosmic Software - Cosmic C compiler for STM8"](#build_with_2) was used. A set of libraries from ["ST Microelectronics - STM8S/A Standard peripheral library"](#build_with_3) is also used.
+
+> <b style="color: blue">NOTE!</b> Firmware only for devices based on STM8 micro-controller. As a development environment, the environment from ["ST Microelectronics - ST Visual Develop"](#build_with_1) with the ["Cosmic Software - Cosmic C compiler for STM8"](#build_with_2) was used. A set of libraries from ["ST Microelectronics - STM8S/A Standard peripheral library"](#build_with_3) is also used.
 
 
 ### Terms of reference and project concept: <a name="concept"></a>
@@ -135,7 +136,7 @@ Execute "power off" command. Sending this command will reset the device's intern
 **Response code** &rArr; `0хАА` - Accept code
 
 
-### Построен с использованием <a name="build_with"></a>
+### Build with <a name="build_with"></a>
 
 * [STVD-STM8](https://www.st.com/content/st_com/en/products/development-tools/software-development-tools/stm8-software-development-tools/stm8-ides/stvd-stm8.html) - ST Visual develop IDE for developing ST7 and STM8 applications <a name="build_with_1"></a>
 * [CXSTM8](https://www.cosmicsoftware.com/download_stm8_free.php) - COSMIC C Cross Compiler for ST Microelectronics STM8 <a name="build_with_2"></a>
